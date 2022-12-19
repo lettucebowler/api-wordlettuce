@@ -2,12 +2,7 @@ name = "api-wordlettuce"
 main = "src/index.ts"
 compatibility_date = "2022-12-08"
 
-kv_namespaces = [
-  { binding = "AUTH", id = "899d8776dfd94a7793a586324ee43faf", preview_id = "ab6f202559944301aef907c9648f718b" },
-]
-
 d1_databases = [
-  { binding = "DB", database_id="a32fa28b-cb2a-431c-a3cd-05d2a3cae31f", database_name = "wordlettuce-gameresults", preview_database_id = "6552ef84-39da-4d78-96ed-d9077c2c4875"},
   { binding = "WORDLETTUCE_DB", database_id="293cfa38-9bea-49f1-862c-dc033cf4fa2e", database_name = "wordlettuce", preview_database_id = "dc9d6725-0526-4a87-9cc0-a06b6c31a4de"}
 ]
 

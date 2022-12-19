@@ -5,8 +5,9 @@ export const getGameResults: MiddlewareHandler = async (c) => {
 	const user = c.req.param('user');
 	const count = c.req.query('count');
 	const limit = count ? count : 30;
+	console.log(user);
 	const query = c.env.WORDLETTUCE_DB.prepare(
-		'SELECT gamenum, username, answers, attempts FROM game_results inner join users WHERE USERNAME = ?1 ORDER BY GAMENUM LIMIT ?2'
+		'SELECT gamenum, username, answers, attempts FROM game_results a inner join users b on a.user_id = b.github_id WHERE USERNAME = ?1 ORDER BY GAMENUM LIMIT ?2'
 	).bind(user, limit);
 	const stuff = await query.all();
 	const { success, results } = stuff;
@@ -32,7 +33,7 @@ export const validateGetInfoForLeaderboardRequest = validator((v) => ({
 export const getInfoForLeaderboard: MiddlewareHandler = async (c) => {
 	const gamenum = parseInt(`${c.req.valid().gamenum}`);
 	const query = c.env.WORDLETTUCE_DB.prepare(
-		`SELECT USERNAME, SUM(ATTEMPTS), COUNT(ATTEMPTS), (COUNT(ATTEMPTS) * 7) - SUM(ATTEMPTS) FROM GAME_RESULTS inner join USERS WHERE GAMENUM > ?1 AND GAMENUM <= ?2 GROUP BY USER_id ORDER BY (COUNT(ATTEMPTS) * 7) - SUM(ATTEMPTS) DESC LIMIT 10`
+		`SELECT USERNAME, SUM(ATTEMPTS), COUNT(ATTEMPTS), (COUNT(ATTEMPTS) * 7) - SUM(ATTEMPTS) FROM game_results a inner join users b on a.user_id = b.github_id WHERE GAMENUM > ?1 AND GAMENUM <= ?2 GROUP BY USER_id ORDER BY (COUNT(ATTEMPTS) * 7) - SUM(ATTEMPTS) DESC LIMIT 10`
 	).bind(gamenum - 7, gamenum);
 	const { success, results } = await query.all();
 
