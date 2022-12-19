@@ -1,0 +1,16 @@
+name = "api-wordlettuce"
+main = "src/index.ts"
+compatibility_date = "2022-12-08"
+
+kv_namespaces = [
+  { binding = "AUTH", id = "899d8776dfd94a7793a586324ee43faf", preview_id = "ab6f202559944301aef907c9648f718b" },
+]
+
+d1_databases = [
+  { binding = "DB", database_id="a32fa28b-cb2a-431c-a3cd-05d2a3cae31f", database_name = "wordlettuce-gameresults", preview_database_id = "6552ef84-39da-4d78-96ed-d9077c2c4875"}
+]
+
+[env.prod]
+routes = [
+  { pattern = "api.word.lettucebowler.net", custom_domain = true, zone_name = "lettucebowler.net" }
+]
