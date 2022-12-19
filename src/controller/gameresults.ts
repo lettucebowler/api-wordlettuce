@@ -5,8 +5,8 @@ export const getGameResults: MiddlewareHandler = async (c) => {
 	const user = c.req.param('user');
 	const count = c.req.query('count');
 	const limit = count ? count : 30;
-	const query = c.env.DB.prepare(
-		'SELECT * FROM GAMERESULTS WHERE USER = ?1 ORDER BY GAMENUM LIMIT ?2'
+	const query = c.env.WORDLETTUCE_DB.prepare(
+		'SELECT gamenum, username, answers, attempts FROM game_results inner join users WHERE USERNAME = ?1 ORDER BY GAMENUM LIMIT ?2'
 	).bind(user, limit);
 	const stuff = await query.all();
 	const { success, results } = stuff;
@@ -31,8 +31,8 @@ export const validateGetInfoForLeaderboardRequest = validator((v) => ({
 
 export const getInfoForLeaderboard: MiddlewareHandler = async (c) => {
 	const gamenum = parseInt(`${c.req.valid().gamenum}`);
-	const query = c.env.DB.prepare(
-		`SELECT USER, SUM(ATTEMPTS), COUNT(ATTEMPTS), (COUNT(ATTEMPTS) * 7) - SUM(ATTEMPTS) FROM GAMERESULTS WHERE GAMENUM > ?1 AND GAMENUM <= ?2 GROUP BY USER ORDER BY (COUNT(ATTEMPTS) * 7) - SUM(ATTEMPTS) DESC LIMIT 10`
+	const query = c.env.WORDLETTUCE_DB.prepare(
+		`SELECT USERNAME, SUM(ATTEMPTS), COUNT(ATTEMPTS), (COUNT(ATTEMPTS) * 7) - SUM(ATTEMPTS) FROM GAME_RESULTS inner join USERS WHERE GAMENUM > ?1 AND GAMENUM <= ?2 GROUP BY USER_id ORDER BY (COUNT(ATTEMPTS) * 7) - SUM(ATTEMPTS) DESC LIMIT 10`
 	).bind(gamenum - 7, gamenum);
 	const { success, results } = await query.all();
 
@@ -54,15 +54,15 @@ export const getInfoForLeaderboard: MiddlewareHandler = async (c) => {
 
 export const validateSaveGameResultsRequest = validator((v) => ({
 	gamenum: v.json('gamenum').asNumber().isRequired(),
-	user: v.json('user').isRequired(),
+	user: v.json('user_id').asNumber().isRequired(),
 	answers: v.json('answers').isRequired()
 }));
 
 export const saveGameResults: MiddlewareHandler = async (c) => {
 	const { user, gamenum, answers } = c.req.valid();
 	const attempts = Math.floor(answers.toString().length / 5);
-	const query = c.env.DB.prepare(
-		'INSERT INTO GAMERESULTS (GAMENUM, USER, ANSWERS, ATTEMPTS) VALUES (?1, ?2, ?3, ?4) ON CONFLICT (USER, GAMENUM) DO UPDATE SET ANSWERS=?5, ATTEMPTS=?6'
+	const query = c.env.WORDLETTUCE_DB.prepare(
+		'INSERT INTO GAME_RESULTS (GAMENUM, USER_ID, ANSWERS, ATTEMPTS) VALUES (?1, ?2, ?3, ?4) ON CONFLICT (USER_id, GAMENUM) DO UPDATE SET ANSWERS=?5, ATTEMPTS=?6'
 	).bind(gamenum, user, answers, attempts, answers, attempts);
 	const results = await query.run();
 	console.log('results', results);

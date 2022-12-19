@@ -1,3 +1,15 @@
-DROP TABLE IF EXISTS GAMERESULTS;
-CREATE TABLE GAMERESULTS (GAMENUM INT, USER TEXT, ANSWERS text, ATTEMPTS INT, PRIMARY KEY (GAMENUM, USER));
-INSERT INTO GAMERESULTS (USER, GAMENUM, ANSWERS, ATTEMPTS) VALUES ('lettucebowler', 286, 'ixcixiixxixxxxx', 3);
+drop table if exists users;
+CREATE TABLE `users` (
+	`github_id` int NOT NULL,
+	`username` varchar(255),
+	PRIMARY KEY (`github_id`)
+);
+
+drop table if exists game_results;
+CREATE TABLE `game_results` (
+	`gamenum` int NOT NULL,
+	`answers` varchar(30) NOT NULL,
+	`user_id` int NOT NULL,
+	`attempts` int NOT NULL,
+	PRIMARY KEY (`gamenum`, `user_id`)
+);
