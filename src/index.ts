@@ -11,7 +11,6 @@ const app = new Hono<{ Bindings: Bindings }>();
 
 app.use('/*', async (c, next) => {
 	const token = c.env.TOKEN;
-	console.log(token);
 	const auth = bearerAuth({ token });
 	return auth(c, next);
 });
