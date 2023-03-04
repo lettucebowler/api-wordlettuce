@@ -16,19 +16,27 @@ app.use('/*', async (c, next) => {
 });
 
 import { getInfoForLeaderboard, leaderboardRequestSchema } from './controller/gameresults';
-app.get(
-	'/api/gameresults/leaderboard',
-	zValidator('query', leaderboardRequestSchema),
-	getInfoForLeaderboard
-);
+app.get('/leaderboard', zValidator('query', leaderboardRequestSchema), getInfoForLeaderboard);
 
-import { saveGameResultRequestSchema, saveGameResults } from './controller/gameresults';
-app.post('/api/gameresults', zValidator('json', saveGameResultRequestSchema), saveGameResults);
-
-import { getGameResults } from './controller/gameresults';
-app.get('/api/gameresults/:user', getGameResults);
+app.get('/gameresults');
 
 import { userSchema, upsertUser } from './controller/user';
-app.post('/api/user', zValidator('json', userSchema), upsertUser);
+app.post('/users', zValidator('json', userSchema), upsertUser);
+
+import { userFilterSchema, getUsers } from './controller/user';
+app.get('/users', zValidator('query', userFilterSchema), getUsers);
+
+import { getUserGameResults } from './controller/user';
+app.get('/users/:user/gameresults', getUserGameResults);
+
+import { getGameResult } from './controller/user';
+app.get('/users/:user/gameresults/:gamenum', getGameResult);
+
+import { saveGameResultRequestSchema, saveGameResults } from './controller/gameresults';
+app.put(
+	'/users/:user/gameresults/:gamenum',
+	zValidator('json', saveGameResultRequestSchema),
+	saveGameResults
+);
 
 export default app;

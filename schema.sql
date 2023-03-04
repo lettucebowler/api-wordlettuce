@@ -1,8 +1,8 @@
 drop table if exists users;
 CREATE TABLE `users` (
+	`id` INTEGER primary key AUTOINCREMENT,
 	`github_id` int NOT NULL,
-	`username` varchar(255),
-	PRIMARY KEY (`github_id`)
+	`username` varchar(255)
 );
 
 drop table if exists game_results;
