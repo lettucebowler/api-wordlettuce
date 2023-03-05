@@ -16,25 +16,23 @@ app.use('/*', async (c, next) => {
 });
 
 import { getInfoForLeaderboard, leaderboardRequestSchema } from './controller/gameresults';
-app.get('/leaderboard', zValidator('query', leaderboardRequestSchema), getInfoForLeaderboard);
-
-app.get('/gameresults');
+app.get('/v1/leaderboard', zValidator('query', leaderboardRequestSchema), getInfoForLeaderboard);
 
 import { userSchema, upsertUser } from './controller/user';
-app.post('/users', zValidator('json', userSchema), upsertUser);
+app.post('/v1/users', zValidator('json', userSchema), upsertUser);
 
 import { userFilterSchema, getUsers } from './controller/user';
-app.get('/users', zValidator('query', userFilterSchema), getUsers);
+app.get('/v1/users', zValidator('query', userFilterSchema), getUsers);
 
 import { getUserGameResults } from './controller/user';
-app.get('/users/:user/gameresults', getUserGameResults);
+app.get('/v1/users/:user/gameresults', getUserGameResults);
 
 import { getGameResult } from './controller/user';
-app.get('/users/:user/gameresults/:gamenum', getGameResult);
+app.get('/v1/users/:user/gameresults/:gamenum', getGameResult);
 
 import { saveGameResultRequestSchema, saveGameResults } from './controller/gameresults';
 app.put(
-	'/users/:user/gameresults/:gamenum',
+	'/v1/users/:user/gameresults/:gamenum',
 	zValidator('json', saveGameResultRequestSchema),
 	saveGameResults
 );

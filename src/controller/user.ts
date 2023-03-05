@@ -24,7 +24,7 @@ export const upsertUser: MiddlewareHandler = async (c) => {
 		).bind(github_id, username);
 		results = await query.run();
 	}
-	const { success } = { success: true };
+	const { success } = results;
 	if (!success) {
 		return c.text('oh no', 500);
 	}

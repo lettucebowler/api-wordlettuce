@@ -28,7 +28,7 @@ export const saveGameResultRequestSchema = z.object({
 });
 
 export const saveGameResults: MiddlewareHandler = async (c) => {
-	const { user_id, answers } = c.req.valid('json');
+	const { user_id, answers } = c.req.valid('json') as { user_id: number; answers: string };
 	const gamenum = Number(c.req.param('gamenum'));
 	const attempts = Math.floor(answers.toString().length / 5);
 	const query = c.env.WORDLETTUCE_DB.prepare(
