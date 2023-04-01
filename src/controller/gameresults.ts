@@ -10,7 +10,7 @@ export const getInfoForLeaderboard: MiddlewareHandler = async (c) => {
 	const wordlettuceDatabase = c.env.WORDLETTUCE_DB;
 	const query = wordlettuceDatabase
 		.prepare(
-			`SELECT USERNAME user, GITHUB_ID userId, SUM(ATTEMPTS) sum, COUNT(ATTEMPTS) count, (COUNT(ATTEMPTS) * 7) - SUM(ATTEMPTS) score FROM game_results a inner join users b on a.user_id = b.github_id WHERE GAMENUM > ?1 AND GAMENUM <= ?2 GROUP BY USER_id ORDER BY (COUNT(ATTEMPTS) * 7) - SUM(ATTEMPTS) DESC, USERNAME DESC LIMIT 10`
+			`SELECT USERNAME user, GITHUB_ID userId, SUM(ATTEMPTS) sum, COUNT(ATTEMPTS) count, count(attempts) + sum(case when attempts >= 6 then 0 else 6 - attempts end) score FROM game_results a inner join users b on a.user_id = b.github_id WHERE GAMENUM > ?1 AND GAMENUM <= ?2 GROUP BY USER_id ORDER BY score DESC, USERNAME LIMIT 10`
 		)
 		.bind(gamenum - 7, gamenum);
 	const { success, results } = await query.all();
