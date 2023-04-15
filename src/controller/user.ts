@@ -55,7 +55,11 @@ export const getUserGameResults: MiddlewareHandler = async (c) => {
 	const query = c.env.WORDLETTUCE_DB.prepare(
 		'SELECT gamenum, username, answers, attempts FROM game_results a inner join users b on a.user_id = b.github_id WHERE USERNAME = ?1 ORDER BY GAMENUM DESC LIMIT ?2 OFFSET ?3'
 	).bind(user, count, offset);
-	const stuff = await query.all();
+
+	const countQuery = c.env.WORDLETTUCE_DB.prepare(
+		'SELECT COUNT(*) rowCount from game_results a inner join users b on a.user_id = b.github_id where username = ?1'
+	).bind(user);
+	const [stuff, countStuff] = await Promise.all([query.all(), countQuery.all()]);
 	const { success, results, meta } = stuff;
 	if (!success) {
 		return c.text('oh no', 500);
@@ -66,7 +70,8 @@ export const getUserGameResults: MiddlewareHandler = async (c) => {
 		meta: {
 			duration
 		},
-		results
+		results,
+		totalCount: countStuff.results.at(0).rowCount
 	});
 };
 
