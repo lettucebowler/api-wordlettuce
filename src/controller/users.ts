@@ -40,12 +40,32 @@ export const userFilterSchema = z.object({
 export const getUsers: MiddlewareHandler = async (c) => {
 	const { count = 10, offset = 0 } = c.req.valid('query');
 	const query = c.env.WORDLETTUCE_DB.prepare(
-		'select * from users order by id limit ?1 offset ?2'
+		'select id, username from users order by id limit ?1 offset ?2'
 	).bind(count, offset);
 	const queryData = await query.all();
 	const { success, results, meta } = queryData;
 	const { duration, changes } = meta;
 	return c.json({ success, results, meta: { duration, changes } });
+};
+
+export const getUserRequestSchema = z.object({
+	id: z.coerce.number().int().positive()
+});
+
+export const getUser: MiddlewareHandler = async (c) => {
+	const { id } = c.req.valid('param');
+	const query = c.env.WORDLETTUCE_DB.prepare(
+		'select * from users where id = ?1'
+	).bind(id);
+	const before = new Date().getTime();
+	const { success, results, meta } = await query.all();
+	const after = new Date().getTime();
+	console.log(after - before);
+	return c.json({ 
+		success,
+		results,
+		meta,
+	});
 };
 
 export const getUserGameResults: MiddlewareHandler = async (c) => {
@@ -91,4 +111,26 @@ export const getGameResult: MiddlewareHandler = async (c) => {
 			duration: meta.duration
 		}
 	});
+};
+
+export const saveGameResultRequestSchema = z.object({
+	user_id: z.number(),
+	answers: z.string()
+});
+
+export const saveGameResults: MiddlewareHandler = async (c) => {
+	const { user_id, answers } = c.req.valid('json') as { user_id: number; answers: string };
+	const gamenum = Number(c.req.param('gamenum'));
+	const attempts = Math.floor(answers.toString().length / 5);
+	const query = c.env.WORDLETTUCE_DB.prepare(
+		'INSERT INTO GAME_RESULTS (GAMENUM, USER_ID, ANSWERS, ATTEMPTS) VALUES (?1, ?2, ?3, ?4) ON CONFLICT (USER_id, GAMENUM) DO UPDATE SET ANSWERS=?5, ATTEMPTS=?6'
+	).bind(gamenum, user_id, answers.slice(-30), attempts, answers.slice(-30), attempts);
+	const results = await query.run();
+
+	const { success } = results;
+	if (!success) {
+		return c.text('oh no', 500);
+	}
+
+	return c.text('created', 201);
 };
