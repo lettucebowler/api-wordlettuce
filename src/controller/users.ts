@@ -40,7 +40,7 @@ export const userFilterSchema = z.object({
 export const getUsers: MiddlewareHandler = async (c) => {
 	const { count = 10, offset = 0 } = c.req.valid('query');
 	const query = c.env.WORDLETTUCE_DB.prepare(
-		'select id, username from users order by id limit ?1 offset ?2'
+		'select * from users order by id limit ?1 offset ?2'
 	).bind(count, offset);
 	const queryData = await query.all();
 	const { success, results, meta } = queryData;
@@ -49,22 +49,17 @@ export const getUsers: MiddlewareHandler = async (c) => {
 };
 
 export const getUserRequestSchema = z.object({
-	id: z.coerce.number().int().positive()
+	id: z.coerce.number({ invalid_type_error: 'id must be numeric.' }).int().positive()
 });
 
 export const getUser: MiddlewareHandler = async (c) => {
 	const { id } = c.req.valid('param');
-	const query = c.env.WORDLETTUCE_DB.prepare(
-		'select * from users where id = ?1'
-	).bind(id);
-	const before = new Date().getTime();
+	const query = c.env.WORDLETTUCE_DB.prepare('select * from users where id = ?1').bind(id);
 	const { success, results, meta } = await query.all();
-	const after = new Date().getTime();
-	console.log(after - before);
-	return c.json({ 
+	return c.json({
 		success,
 		results,
-		meta,
+		meta
 	});
 };
 

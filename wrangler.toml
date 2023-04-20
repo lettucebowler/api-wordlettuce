@@ -9,5 +9,5 @@ database_id = "293cfa38-9bea-49f1-862c-dc033cf4fa2e"
 
 [env.prod]
 routes = [
-  { pattern = "api.word.lettucebowler.net", custom_domain = true, zone_name = "lettucebowler.net" }
+  { pattern = "api.word.lettucebowler.net", custom_domain = true }
 ]
