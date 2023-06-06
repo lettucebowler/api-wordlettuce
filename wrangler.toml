@@ -1,10 +1,10 @@
 name = "api-wordlettuce"
-compatibility_date = "2023-01-01"
+compatibility_date = "2023-05-18"
 
 [[ d1_databases ]]
 binding = "WORDLETTUCE_DB"
-database_name = "wordlettuce"
-database_id = "293cfa38-9bea-49f1-862c-dc033cf4fa2e"
+database_name = "wordlettuce-beta"
+database_id = "6f4b4e21-8961-4fe3-b2da-842499b37879"
 
 
 [env.prod]
