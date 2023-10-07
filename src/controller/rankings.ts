@@ -1,8 +1,9 @@
 import { MiddlewareHandler } from 'hono';
 import z from 'zod';
+import { getGameNum } from '../util/game-num';
 
 export const getRankingsRequestSchema = z.object({
-	gamenum: z.preprocess((a) => parseInt(z.string().parse(a), 10), z.number().positive())
+	gamenum: z.coerce.number().positive().default(getGameNum),
 });
 
 export const getRankings: MiddlewareHandler = async (c) => {
@@ -16,8 +17,15 @@ export const getRankings: MiddlewareHandler = async (c) => {
 	const { success, results } = await query.all();
 
 	if (!success) {
-		return c.text('oh no', 500);
+		return c.json({
+			success: false,
+			message: 'Query failed.',
+		}, 500);
 	}
-
-	return c.json(results);
+	return c.json({
+		success: true,
+		data: results,
+	});
 };
+
+

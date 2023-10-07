@@ -21,17 +21,8 @@ app.get('/v1/rankings', zValidator('query', getRankingsRequestSchema), getRankin
 import { userSchema, upsertUser } from './controller/users';
 app.post('/v1/users', zValidator('json', userSchema), upsertUser);
 
-import { userFilterSchema, getUsers } from './controller/users';
-app.get('/v1/users', zValidator('query', userFilterSchema), getUsers);
-
-import { getUserRequestSchema, getUser } from './controller/users';
-app.get('/v1/users/:id', zValidator('param', getUserRequestSchema), getUser);
-
 import { getUserGameResults } from './controller/users';
 app.get('/v1/users/:user/gameresults', getUserGameResults);
-
-import { getGameResult } from './controller/users';
-app.get('/v1/users/:user/gameresults/:gamenum', getGameResult);
 
 import { saveGameResultRequestSchema, saveGameResults } from './controller/users';
 app.put(

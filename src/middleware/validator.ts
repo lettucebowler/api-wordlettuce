@@ -27,7 +27,6 @@ export const zValidator = <
 ): MiddlewareHandler<E, P, V> =>
 	validator(target, (value, c) => {
 		const result = schema.safeParse(value);
-
 		if (hook) {
 			const hookResult = hook(result, c);
 			if (hookResult instanceof Response || hookResult instanceof Promise) {

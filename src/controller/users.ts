@@ -12,54 +12,41 @@ export const upsertUser: MiddlewareHandler = async (c) => {
 		'select github_id, username from users where github_id = ?1'
 	).bind(github_id);
 	const existingUserResponse = await getExisting.all();
-	let results;
+	let createdAccounts;
 	if (existingUserResponse?.results?.length) {
 		const query = c.env.WORDLETTUCE_DB.prepare(
 			'update users set username = ?1 where github_id = ?2'
 		).bind(username, github_id);
-		results = await query.run();
+		createdAccounts = await query.run();
 	} else {
 		const query = c.env.WORDLETTUCE_DB.prepare(
 			'insert into users (github_id, username) values (?1, ?2)'
 		).bind(github_id, username);
-		results = await query.run();
+		createdAccounts = await query.run();
 	}
-	const { success } = results;
+	const { success } = createdAccounts;
 	if (!success) {
-		return c.text('oh no', 500);
+		return c.json({
+			success: false,
+			message: 'Create failed.',
+		}, 500)
 	}
-
-	return c.text('created', 201);
-};
-
-export const userFilterSchema = z.object({
-	count: z.coerce.number().positive().optional(),
-	offset: z.coerce.number().positive().optional()
-});
-
-export const getUsers: MiddlewareHandler = async (c) => {
-	const { count = 10, offset = 0 } = c.req.valid('query');
-	const query = c.env.WORDLETTUCE_DB.prepare(
-		'select * from users order by id limit ?1 offset ?2'
-	).bind(count, offset);
-	const queryData = await query.all();
-	const { success, results, meta } = queryData;
-	const { duration, changes } = meta;
-	return c.json({ success, results, meta: { duration, changes } });
-};
-
-export const getUserRequestSchema = z.object({
-	id: z.coerce.number({ invalid_type_error: 'id must be numeric.' }).int().positive()
-});
-
-export const getUser: MiddlewareHandler = async (c) => {
-	const { id } = c.req.valid('param');
-	const query = c.env.WORDLETTUCE_DB.prepare('select * from users where id = ?1').bind(id);
-	const { success, results, meta } = await query.all();
+	const getCreated = c.env.WORDLETTUCE_DB.prepare(
+		`select github_id, username, id from users where github_id = ?1 and username = ?2`
+	).bind(github_id, `${username}`);
+	createdAccounts = await getCreated.all();
+	if (!createdAccounts.success) {
+		return c.json({
+			success: false,
+			message: 'Create failed.',
+		}, 500);
+	}
+	const [ created ] = createdAccounts.results;
 	return c.json({
-		success,
-		results,
-		meta
+		success: true,
+		data: {
+			created,
+		}
 	});
 };
 
@@ -68,42 +55,25 @@ export const getUserGameResults: MiddlewareHandler = async (c) => {
 	const count = c.req.query('count') || 90;
 	const offset = c.req.query('offset') || 0;
 	const query = c.env.WORDLETTUCE_DB.prepare(
-		'SELECT gamenum, username, answers, attempts FROM game_results a inner join users b on a.user_id = b.github_id WHERE USERNAME = ?1 ORDER BY GAMENUM DESC LIMIT ?2 OFFSET ?3'
+		'SELECT gamenum, answers, attempts FROM game_results a inner join users b on a.user_id = b.github_id WHERE USERNAME = ?1 ORDER BY GAMENUM DESC LIMIT ?2 OFFSET ?3'
 	).bind(user, count, offset);
 
 	const countQuery = c.env.WORDLETTUCE_DB.prepare(
 		'SELECT COUNT(*) rowCount from game_results a inner join users b on a.user_id = b.github_id where username = ?1'
 	).bind(user);
 	const [stuff, countStuff] = await Promise.all([query.all(), countQuery.all()]);
-	const { success, results, meta } = stuff;
+	const { success, results } = stuff;
 	if (!success) {
-		return c.text('oh no', 500);
+		return c.json({
+			success: false,
+			message: 'Query failed.'
+		});
 	}
-	const { duration } = meta;
 	return c.json({
 		success,
-		meta: {
-			duration
-		},
-		results,
-		totalCount: countStuff.results.at(0).rowCount
-	});
-};
-
-export const getGameResult: MiddlewareHandler = async (c) => {
-	const user = c.req.param('user');
-	const gamenum = Number(c.req.param('gamenum'));
-	const query = c.env.WORDLETTUCE_DB.prepare(
-		'SELECT gamenum, username, answers, attempts FROM game_results a inner join users b on a.user_id = b.github_id WHERE USERNAME = ?1 AND GAMENUM = ?2 LIMIT 1'
-	).bind(user, gamenum);
-	const queryData = await query.all();
-	const { success, results, meta } = queryData;
-	const [gameResult] = results;
-	return c.json({
-		success,
-		gameResult,
-		meta: {
-			duration: meta.duration
+		data: {
+			results,
+			totalCount: countStuff.results.at(0).rowCount
 		}
 	});
 };
@@ -122,10 +92,20 @@ export const saveGameResults: MiddlewareHandler = async (c) => {
 	).bind(gamenum, user_id, answers.slice(-30), attempts, answers.slice(-30), attempts);
 	const results = await query.run();
 
-	const { success } = results;
-	if (!success) {
-		return c.text('oh no', 500);
+	if (!results.success) {
+		return c.json({
+			success: false,
+			message: 'Create failed.',
+		}, 500);
 	}
-
-	return c.text('created', 201);
+	return c.json({
+		success: true,
+		data: {
+			created: {
+				gamenum,
+				answers,
+				attempts,
+			}
+		}
+	})
 };
