@@ -1,111 +1,75 @@
-import { MiddlewareHandler } from 'hono';
-import { z } from 'zod';
+import { Hono } from 'hono';
+import { object, coerce } from 'valibot';
+import { ApiWordLettuceBindings } from '../util/env';
+import { validate } from '../util/validate';
+import { answerSchema, gameNumSchema, userIdSchema, usernameSchema } from '../util/schemas';
 
-export const userSchema = z.object({
-	username: z.string(),
-	github_id: z.number()
+const userController = new Hono<{ Bindings: ApiWordLettuceBindings }>();
+
+const upserUserParamsSchema = object({
+	userId: coerce(userIdSchema, Number)
 });
-
-export const upsertUser: MiddlewareHandler = async (c) => {
-	const { username, github_id } = c.req.valid('json');
-	const getExisting = c.env.WORDLETTUCE_DB.prepare(
-		'select github_id, username from users where github_id = ?1'
-	).bind(github_id);
-	const existingUserResponse = await getExisting.all();
-	let createdAccounts;
-	if (existingUserResponse?.results?.length) {
-		const query = c.env.WORDLETTUCE_DB.prepare(
-			'update users set username = ?1 where github_id = ?2'
-		).bind(username, github_id);
-		createdAccounts = await query.run();
-	} else {
-		const query = c.env.WORDLETTUCE_DB.prepare(
-			'insert into users (github_id, username) values (?1, ?2)'
-		).bind(github_id, username);
-		createdAccounts = await query.run();
-	}
-	const { success } = createdAccounts;
-	if (!success) {
-		return c.json({
-			success: false,
-			message: 'Create failed.',
-		}, 500)
-	}
-	const getCreated = c.env.WORDLETTUCE_DB.prepare(
-		`select github_id, username, id from users where github_id = ?1 and username = ?2`
-	).bind(github_id, `${username}`);
-	createdAccounts = await getCreated.all();
-	if (!createdAccounts.success) {
-		return c.json({
-			success: false,
-			message: 'Create failed.',
-		}, 500);
-	}
-	const [ created ] = createdAccounts.results;
-	return c.json({
-		success: true,
-		data: {
-			created,
-		}
-	});
-};
-
-export const getUserGameResults: MiddlewareHandler = async (c) => {
-	const user = c.req.param('user');
-	const count = c.req.query('count') || 90;
-	const offset = c.req.query('offset') || 0;
-	const query = c.env.WORDLETTUCE_DB.prepare(
-		'SELECT gamenum, answers, attempts FROM game_results a inner join users b on a.user_id = b.github_id WHERE USERNAME = ?1 ORDER BY GAMENUM DESC LIMIT ?2 OFFSET ?3'
-	).bind(user, count, offset);
-
-	const countQuery = c.env.WORDLETTUCE_DB.prepare(
-		'SELECT COUNT(*) rowCount from game_results a inner join users b on a.user_id = b.github_id where username = ?1'
-	).bind(user);
-	const [stuff, countStuff] = await Promise.all([query.all(), countQuery.all()]);
-	const { success, results } = stuff;
-	if (!success) {
-		return c.json({
-			success: false,
-			message: 'Query failed.'
-		});
-	}
-	return c.json({
-		success,
-		data: {
-			results,
-			totalCount: countStuff.results.at(0).rowCount
-		}
-	});
-};
-
-export const saveGameResultRequestSchema = z.object({
-	user_id: z.number(),
-	answers: z.string()
+const upserUserBodySchema = object({
+	username: usernameSchema
 });
-
-export const saveGameResults: MiddlewareHandler = async (c) => {
-	const { user_id, answers } = c.req.valid('json') as { user_id: number; answers: string };
-	const gamenum = Number(c.req.param('gamenum'));
-	const attempts = Math.floor(answers.toString().length / 5);
+userController.put('/:userId', async (c) => {
+	const params = validate(c, upserUserParamsSchema, c.req.param());
+	const body = validate(c, upserUserBodySchema, await c.req.json());
+	const { username } = body;
+	const { userId } = params;
 	const query = c.env.WORDLETTUCE_DB.prepare(
-		'INSERT INTO GAME_RESULTS (GAMENUM, USER_ID, ANSWERS, ATTEMPTS) VALUES (?1, ?2, ?3, ?4) ON CONFLICT (USER_id, GAMENUM) DO UPDATE SET ANSWERS=?5, ATTEMPTS=?6'
-	).bind(gamenum, user_id, answers.slice(-30), attempts, answers.slice(-30), attempts);
-	const results = await query.run();
-
-	if (!results.success) {
-		return c.json({
-			success: false,
-			message: 'Create failed.',
-		}, 500);
+		'insert into users (github_id, username) values (?1, ?2) on conflict do update set username = ?2'
+	).bind(userId, username);
+	const { success, meta } = await query.run();
+	if (!success) {
+		return c.json(
+			{
+				success: false,
+				message: 'Create failed.'
+			},
+			500
+		);
 	}
 	return c.json({
 		success: true,
 		data: {
-			created: {
-				gamenum,
-				answers,
-				attempts,
-			}
-		}
-	})
-};
+			userId,
+			username
+		},
+		meta
+	});
+});
+
+const createGameResultParamsSchema = object({
+	userId: coerce(userIdSchema, Number),
+	gameNum: coerce(gameNumSchema, Number)
+});
+
+const createGameResultBodySchema = object({
+	answers: answerSchema
+});
+userController.put(':userId/game-results/:gameNum', async (c) => {
+	const { userId, gameNum } = validate(c, createGameResultParamsSchema, c.req.param());
+	const { answers } = validate(c, createGameResultBodySchema, await c.req.json());
+	const query = c.env.WORDLETTUCE_DB.prepare(
+		'INSERT INTO GAME_RESULTS (GAMENUM, USER_ID, ANSWERS, attempts) VALUES (?1, ?2, ?3, ?4) ON CONFLICT (USER_id, GAMENUM) DO UPDATE SET ANSWERS=?3, attempts=?4 returning *'
+	).bind(gameNum, userId, answers.slice(-30), answers.length / 5);
+	const createResult = await query.run();
+	if (!createResult.success) {
+		return c.json(
+			{
+				success: false,
+				data: createResult
+			},
+			500
+		);
+	}
+	const [created] = createResult.results;
+	return c.json({
+		success: true,
+		data: created,
+		meta: createResult.meta
+	});
+});
+
+export default userController;
