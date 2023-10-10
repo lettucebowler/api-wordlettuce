@@ -52,7 +52,7 @@ userController.put(':userId/game-results/:gameNum', async (c) => {
 	const { userId, gameNum } = validate(c, createGameResultParamsSchema, c.req.param());
 	const { answers } = validate(c, createGameResultBodySchema, await c.req.json());
 	const query = c.env.WORDLETTUCE_DB.prepare(
-		'INSERT INTO GAME_RESULTS (GAMENUM, USER_ID, ANSWERS, attempts) VALUES (?1, ?2, ?3, ?4) ON CONFLICT (USER_id, GAMENUM) DO UPDATE SET ANSWERS=?3, attempts=?4 returning *'
+		'INSERT INTO GAME_RESULTS (GAMENUM, USER_ID, ANSWERS, attempts) VALUES (?1, ?2, ?3, ?4) ON CONFLICT (USER_id, GAMENUM) DO UPDATE SET ANSWERS=?3, attempts=?4 returning gamenum gameNum, user_id userId, answers, attempts'
 	).bind(gameNum, userId, answers.slice(-30), answers.length / 5);
 	const createResult = await query.run();
 	if (!createResult.success) {
