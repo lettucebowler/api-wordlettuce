@@ -14,7 +14,7 @@ const getGameResultsQuerySchema = object({
 gameResultsController.get('/', async (c) => {
 	const { username, limit, offset } = validate(c, getGameResultsQuerySchema, c.req.query());
 	const query = c.env.WORDLETTUCE_DB.prepare(
-		'select gamenum gameNum, answers, attempts from game_results where user_id = (select github_id from users where username = ?1) order by gamenum desc limit ?2 + 1 offset ?3'
+		'select gamenum gameNum, answers, attempts from game_results a inner join users b on a.user_id = b.github_id where username = ?1 order by gamenum desc limit ?2 + 1 offset ?3'
 	).bind(username, limit, offset);
 	const queryResult = await query.all();
 	if (!queryResult.success) {
