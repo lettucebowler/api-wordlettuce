@@ -7,7 +7,7 @@ import gameResultsController from './controller/game-results';
 
 const app = new Hono<{ Bindings: ApiWordLettuceBindings }>();
 
-app.use('/*', async (c, next) => {
+app.use(async (c, next) => {
 	const token = c.env.TOKEN;
 	const auth = bearerAuth({ token });
 	return auth(c, next);
