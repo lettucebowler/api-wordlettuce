@@ -6,12 +6,12 @@
 		"format": "prettier --ignore-path .gitignore --write --plugin-search-dir=. ."
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20231010.0",
-		"@typescript-eslint/eslint-plugin": "^6.7.5",
-		"@typescript-eslint/parser": "^6.7.5",
+		"@cloudflare/workers-types": "^4.20231016.0",
+		"@typescript-eslint/eslint-plugin": "^6.8.0",
+		"@typescript-eslint/parser": "^6.8.0",
 		"better-sqlite3": "^9.0.0",
 		"eslint": "^8.51.0",
-		"hono": "^3.7.6",
+		"hono": "^3.8.0",
 		"prettier": "^3.0.3",
 		"typescript": "^5.2.2",
 		"valibot": "^0.19.0",
