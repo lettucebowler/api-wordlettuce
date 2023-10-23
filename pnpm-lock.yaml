@@ -21,8 +21,8 @@ devDependencies:
     specifier: ^8.52.0
     version: 8.52.0
   hono:
-    specifier: ^3.8.2
-    version: 3.8.2
+    specifier: ^3.8.3
+    version: 3.8.3
   prettier:
     specifier: ^3.0.3
     version: 3.0.3
@@ -1480,10 +1480,10 @@ packages:
     engines: { node: '>=8' }
     dev: true
 
-  /hono@3.8.2:
+  /hono@3.8.3:
     resolution:
       {
-        integrity: sha512-4NCjNbew1RRUySO5atcEw2bWIJd2+W5B0gCks4DAFJGbjoFuexxWox8PQuQkZwvqLEVoEk085P9Y/O+YrX1MCQ==
+        integrity: sha512-NLJgUCKKMvijBy+V+U1FQTsNwHk2bD1KGlWJA9+qaCNWgx5St9bhfQwxrpcTGvG2Gi2naemTWCzBavDNXOqO6Q==
       }
     engines: { node: '>=16.0.0' }
     dev: true
