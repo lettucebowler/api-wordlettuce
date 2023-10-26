@@ -11,10 +11,10 @@
 		"@typescript-eslint/parser": "^6.9.0",
 		"better-sqlite3": "^9.0.0",
 		"eslint": "^8.52.0",
-		"hono": "^3.8.3",
+		"hono": "^3.8.4",
 		"prettier": "^3.0.3",
 		"typescript": "^5.2.2",
 		"valibot": "^0.19.0",
-		"wrangler": "^3.14.0"
+		"wrangler": "^3.15.0"
 	}
 }
