@@ -1,9 +1,45 @@
 import { Context } from 'hono';
-import { BaseSchema, safeParse } from 'valibot';
+import { ObjectSchema, StringSchema, safeParse } from 'valibot';
 import { HTTPException } from 'hono/http-exception';
 
-export function validate(c: Context, schema: BaseSchema, input: unknown) {
-	const parseResult = safeParse(schema, input);
+type JsonRequestSchema = ObjectSchema<{
+	query?: ObjectSchema<any>;
+	param?: ObjectSchema<any>;
+	json?: ObjectSchema<any>;
+	header?: ObjectSchema<any>;
+}>;
+type TextRequestSchema = ObjectSchema<{
+	query?: ObjectSchema<any>;
+	param?: ObjectSchema<any>;
+	text?: StringSchema;
+	header?: ObjectSchema<any>;
+}>;
+type RequestSchema = JsonRequestSchema | TextRequestSchema;
+export async function validateRequest<T extends RequestSchema>(schema: T, c: Context) {
+	const query = c.req.query();
+	const param = c.req.param();
+	const header = c.req.header();
+	const json =
+		header['content-length'] &&
+		Number(header['content-length']) &&
+		header['content-type'] &&
+		header['content-type'].includes('json')
+			? await c.req.json()
+			: undefined;
+	const text =
+		header['content-length'] &&
+		Number(header['content-length']) &&
+		header['content-type'] &&
+		header['content-type'].includes('text')
+			? await c.req.text()
+			: undefined;
+	const parseResult = safeParse(schema, {
+		query,
+		param,
+		json,
+		text,
+		header
+	});
 	if (!parseResult.success) {
 		const message = parseResult.issues
 			.map((issue) => {
@@ -26,6 +62,7 @@ export function validate(c: Context, schema: BaseSchema, input: unknown) {
 			}
 		);
 		throw new HTTPException(400, { res: response });
+	} else {
+		return parseResult.output;
 	}
-	return parseResult.output;
 }

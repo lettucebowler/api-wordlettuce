@@ -2,14 +2,15 @@ import { Hono } from 'hono';
 import { cache } from 'hono/cache';
 import { object, optional } from 'valibot';
 import { ApiWordLettuceBindings } from '../util/env';
-import { validate } from '../util/validate';
+import { validateRequest } from '../util/validate';
 import { gameNumSchema } from '../util/schemas';
 import { getGameNum } from '../util/game-num';
-
 const rankingsController = new Hono<{ Bindings: ApiWordLettuceBindings }>();
 
-const getRankingsQuerySchema = object({
-	gameNum: optional(gameNumSchema, getGameNum)
+const getRankingsRequestSchema = object({
+	query: object({
+		gameNum: optional(gameNumSchema, getGameNum)
+	})
 });
 rankingsController.get(
 	'/',
@@ -18,7 +19,8 @@ rankingsController.get(
 		cacheControl: 'max-age=60'
 	}),
 	async (c) => {
-		const { gameNum } = validate(c, getRankingsQuerySchema, c.req.query());
+		const data = await validateRequest(getRankingsRequestSchema, c);
+		const { gameNum } = data.query;
 
 		const query = c.env.WORDLETTUCE_DB.prepare(
 			`SELECT USERNAME user, COUNT(ATTEMPTS) games, count(attempts) + sum(max(0, 6 - attempts)) score FROM game_results a inner join users b on a.user_id = b.github_id WHERE GAMENUM > ?1 - 7 AND GAMENUM <= ?1 GROUP BY USER_id ORDER BY score DESC LIMIT 10`
