@@ -49,7 +49,7 @@ const rankingsControllerV2 = new Hono<{ Bindings: ApiWordLettuceBindings }>();
 rankingsControllerV2.get(
 	'/',
 	cache({
-		cacheName: 'api-wordlettuce-rankings',
+		cacheName: 'api-wordlettuce-rankings-v2',
 		cacheControl: 'max-age=60'
 	}),
 	async (c) => {
