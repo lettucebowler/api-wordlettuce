@@ -40,4 +40,35 @@ gameResultsController.get('/', async (c) => {
 		meta: queryResult.meta
 	});
 });
+
+const createGameResultRequestSchema = object({
+	json: object({
+		gameNum: gameNumSchema,
+		userId: userIdSchema,
+		answers: answerSchema
+	})
+});
+gameResultsController.post('/', async (c) => {
+	const data = await validateRequest(createGameResultRequestSchema, c);
+	const { gameNum, userId, answers } = data.json;
+	const query = c.env.WORDLETTUCE_DB.prepare(
+		'INSERT INTO GAME_RESULTS (GAMENUM, USER_ID, ANSWERS, attempts) VALUES (?1, ?2, ?3, ?4) ON CONFLICT (USER_id, GAMENUM) DO UPDATE SET ANSWERS=?3, attempts=?4 returning gamenum gameNum, user_id userId, answers, attempts'
+	).bind(gameNum, userId, answers.slice(-30), answers.length / 5);
+	const createResult = await query.run();
+	if (!createResult.success) {
+		return c.json(
+			{
+				success: false,
+				data: createResult
+			},
+			500
+		);
+	}
+	const [created] = createResult.results;
+	return c.json({
+		success: true,
+		data: created,
+		meta: createResult.meta
+	});
+});
 export default gameResultsController;
