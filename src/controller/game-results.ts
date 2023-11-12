@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { coerce, integer, number, object, objectAsync, optional } from 'valibot';
+import { coerce, integer, number, object, optional } from 'valibot';
 import { ApiWordLettuceBindings } from '../util/env';
 import { validateRequest } from '../util/validate';
 import {
