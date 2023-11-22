@@ -6,15 +6,15 @@
 		"format": "prettier --ignore-path .gitignore --write ."
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20231025.0",
-		"@typescript-eslint/eslint-plugin": "^6.11.0",
-		"@typescript-eslint/parser": "^6.11.0",
+		"@cloudflare/workers-types": "^4.20231121.0",
+		"@typescript-eslint/eslint-plugin": "^6.12.0",
+		"@typescript-eslint/parser": "^6.12.0",
 		"better-sqlite3": "^9.1.1",
 		"eslint": "^8.54.0",
-		"hono": "^3.10.1",
+		"hono": "^3.10.2",
 		"prettier": "^3.1.0",
-		"typescript": "^5.2.2",
+		"typescript": "^5.3.2",
 		"valibot": "^0.21.0",
-		"wrangler": "^3.16.0"
+		"wrangler": "^3.17.0"
 	}
 }
