@@ -35,7 +35,9 @@ gameResultsController.get('/', async (c) => {
 		success: true,
 		data: {
 			results: queryResult.results.slice(0, more ? -1 : undefined),
-			more
+			more,
+			limit,
+			offset,
 		},
 		meta: queryResult.meta
 	});
