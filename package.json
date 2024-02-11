@@ -6,15 +6,15 @@
 		"format": "prettier --write ."
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20240129.0",
-		"@typescript-eslint/eslint-plugin": "^6.20.0",
-		"@typescript-eslint/parser": "^6.20.0",
-		"better-sqlite3": "^9.4.0",
+		"@cloudflare/workers-types": "^4.20240208.0",
+		"@typescript-eslint/eslint-plugin": "^6.21.0",
+		"@typescript-eslint/parser": "^6.21.0",
+		"better-sqlite3": "^9.4.1",
 		"eslint": "^8.56.0",
-		"hono": "^3.12.10",
-		"prettier": "^3.2.4",
+		"hono": "^4.0.1",
+		"prettier": "^3.2.5",
 		"typescript": "^5.3.3",
-		"valibot": "^0.27.1",
-		"wrangler": "^3.26.0"
+		"valibot": "^0.28.1",
+		"wrangler": "^3.28.1"
 	}
 }
