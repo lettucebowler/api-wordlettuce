@@ -60,17 +60,18 @@ gameResultsController.post('/', async (c) => {
 	if (!createResult.success) {
 		return c.json(
 			{
-				success: false,
-				data: createResult
+				success: false
 			},
 			500
 		);
 	}
-	const [created] = createResult.results;
 	return c.json({
 		success: true,
-		data: created,
-		meta: createResult.meta
+		data: {
+			gameNum,
+			userId,
+			answers
+		}
 	});
 });
 export default gameResultsController;
