@@ -1,5 +1,15 @@
 import { Hono } from 'hono';
-import { coerce, integer, number, object, optional } from 'valibot';
+import {
+	coerce,
+	integer,
+	number,
+	object,
+	optional,
+	string,
+	custom,
+	safeParse,
+	array
+} from 'valibot';
 import { ApiWordLettuceBindings } from '../util/env';
 import { validateRequest } from '../util/validate';
 import {
@@ -17,11 +27,19 @@ const getGameResultsRequestSchema = object({
 		offset: optional(coerce(number([integer()]), Number), 0)
 	})
 });
+const gameResultSchema = object({
+	gameNum: number([integer()]),
+	answers: string([
+		custom((input) => input.length % 5 === 0, 'answers must be multiple of 5 characters')
+	]),
+	userId: number([integer()]),
+	attempts: number([integer()])
+});
 gameResultsController.get('/', async (c) => {
 	const data = await validateRequest(getGameResultsRequestSchema, c);
 	const { username, limit, offset } = data.query;
 	const query = c.env.WORDLETTUCE_DB.prepare(
-		'select gamenum gameNum, answers, attempts from game_results a inner join users b on a.user_id = b.github_id where username = ?1 order by gamenum desc limit ?2 + 1 offset ?3'
+		'select gamenum gameNum, answers, user_id userId, attempts from game_results a inner join users b on a.user_id = b.github_id where username = ?1 order by gamenum desc limit ?2 + 1 offset ?3'
 	).bind(username, limit, offset);
 	const queryResult = await query.all();
 	if (!queryResult.success) {
@@ -31,10 +49,20 @@ gameResultsController.get('/', async (c) => {
 		});
 	}
 	const more = queryResult.results.length > limit;
+	const gameResultsParseResult = safeParse(array(gameResultSchema), queryResult.results);
+	if (!gameResultsParseResult.success) {
+		return c.json(
+			{
+				success: false,
+				message: 'invalid data from db'
+			},
+			500
+		);
+	}
 	return c.json({
 		success: true,
 		data: {
-			results: queryResult.results.slice(0, more ? -1 : undefined),
+			results: gameResultsParseResult.output.slice(0, more ? -1 : undefined),
 			more,
 			limit,
 			offset
