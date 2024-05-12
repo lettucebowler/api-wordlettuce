@@ -9,12 +9,12 @@
 		"@cloudflare/workers-types": "^4.20240502.0",
 		"@typescript-eslint/eslint-plugin": "^7.8.0",
 		"@typescript-eslint/parser": "^7.8.0",
-		"better-sqlite3": "^9.6.0",
+		"better-sqlite3": "^10.0.0",
 		"eslint": "^9.2.0",
-		"hono": "^4.3.1",
+		"hono": "^4.3.5",
 		"prettier": "^3.2.5",
 		"typescript": "^5.4.5",
 		"valibot": "^0.30.0",
-		"wrangler": "^3.53.1"
+		"wrangler": "^3.55.0"
 	}
 }
