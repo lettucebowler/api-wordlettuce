@@ -1,44 +1,47 @@
 import { Hono } from 'hono';
-import { object, coerce } from 'valibot';
+import * as v from 'valibot';
 import { ApiWordLettuceBindings } from '../util/env';
-import { validateRequest } from '../util/validate';
-import { userIdSchema, usernameSchema } from '../util/schemas';
+import { UserIdSchema, UsernameSchema } from '../util/schemas';
+import { vValidator } from '@hono/valibot-validator';
 
 const userController = new Hono<{ Bindings: ApiWordLettuceBindings }>();
 
-const upsertUserRequestSchema = object({
-	param: object({
-		userId: coerce(userIdSchema, Number)
-	}),
-	json: object({
-		username: usernameSchema
-	})
+const UpsertUserJsonSchema = v.object({
+	username: UsernameSchema
 });
-userController.put('/:userId', async (c) => {
-	const data = await validateRequest(upsertUserRequestSchema, c);
-	const { username } = data.json;
-	const { userId } = data.param;
-	const query = c.env.WORDLETTUCE_DB.prepare(
-		'insert into users (github_id, username) values (?1, ?2) on conflict do update set username = ?2'
-	).bind(userId, username);
-	const { success, meta } = await query.run();
-	if (!success) {
-		return c.json(
-			{
-				success: false,
-				message: 'Create failed.'
+const UpserUserParamSchema = v.object({
+	userId: v.pipe(v.string(), v.transform(Number), UserIdSchema)
+});
+
+userController.put(
+	'/:userId',
+	vValidator('json', UpsertUserJsonSchema),
+	vValidator('param', UpserUserParamSchema),
+	async (c) => {
+		const { username } = c.req.valid('json');
+		const { userId } = c.req.valid('param');
+		const query = c.env.WORDLETTUCE_DB.prepare(
+			'insert into users (github_id, username) values (?1, ?2) on conflict do update set username = ?2'
+		).bind(userId, username);
+		const { success, meta } = await query.run();
+		if (!success) {
+			return c.json(
+				{
+					success: false,
+					message: 'Create failed.'
+				},
+				500
+			);
+		}
+		return c.json({
+			success: true,
+			data: {
+				userId,
+				username
 			},
-			500
-		);
+			meta
+		});
 	}
-	return c.json({
-		success: true,
-		data: {
-			userId,
-			username
-		},
-		meta
-	});
-});
+);
 
 export default userController;
