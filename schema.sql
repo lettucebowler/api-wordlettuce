@@ -14,13 +14,13 @@
 -- 	PRIMARY KEY (`gamenum`, `user_id`)
 -- );
 
--- drop table if exists identities;
--- CREATE TABLE `identities` (
--- 	`user_id` int not null,
--- 	`provider` text not null,
--- 	`provider_id` text not null,
--- 	primary key (`user_id`, `provider`)
--- );
+drop table if exists identities;
+CREATE TABLE `identities` (
+	`persona_id` int not null,
+	`provider` text not null,
+	`provider_id` text not null,
+	primary key (`persona_id`, `provider`)
+);
 
 drop table if exists personas;
 create table `personas` (
