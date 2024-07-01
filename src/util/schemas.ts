@@ -6,5 +6,6 @@ export const GameNumSchema = PositiveIntegerSchema;
 export const AnswerSchema = v.pipe(
 	v.string(),
 	v.regex(/[xci_]/),
-	v.check((input) => input.length % 5 === 0, 'Must be multiple of 5 characters')
+	v.check((input) => input.length % 5 === 0, 'Must be multiple of 5 characters'),
+	v.transform((input) => input.slice(0, 30))
 );
