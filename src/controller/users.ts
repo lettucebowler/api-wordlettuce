@@ -3,7 +3,8 @@ import * as v from 'valibot';
 import { ApiWordLettuceBindings } from '../util/env';
 import { UserIdSchema, UsernameSchema } from '../util/schemas';
 import { vValidator } from '@hono/valibot-validator';
-import { IdentitySchema } from '../schemas';
+import { drizzle } from 'drizzle-orm/d1';
+import { users } from '../schema/drizzle';
 
 const userController = new Hono<{ Bindings: ApiWordLettuceBindings }>();
 
@@ -21,11 +22,13 @@ userController.put(
 	async (c) => {
 		const { username } = c.req.valid('json');
 		const { userId } = c.req.valid('param');
-		const query = c.env.WORDLETTUCE_DB.prepare(
-			'insert into users (github_id, username) values (?1, ?2) on conflict do update set username = ?2'
-		).bind(userId, username);
-		const { success, meta } = await query.run();
-		if (!success) {
+		const db = drizzle(c.env.WORDLETTUCE_DB);
+		const inserts = await db
+			.insert(users)
+			.values({ username: username, id: userId })
+			.onConflictDoUpdate({ target: users.id, set: { username } })
+			.returning();
+		if (!inserts.length) {
 			return c.json(
 				{
 					success: false,
@@ -34,14 +37,7 @@ userController.put(
 				500
 			);
 		}
-		return c.json({
-			success: true,
-			data: {
-				userId,
-				username
-			},
-			meta
-		});
+		return c.json(inserts.at(0));
 	}
 );
 
