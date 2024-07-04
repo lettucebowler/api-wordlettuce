@@ -8,15 +8,15 @@
 	"devDependencies": {
 		"@cloudflare/workers-types": "^4.20240620.0",
 		"@hono/valibot-validator": "^0.3.0",
-		"@typescript-eslint/eslint-plugin": "^7.14.1",
-		"@typescript-eslint/parser": "^7.14.1",
-		"better-sqlite3": "^11.0.0",
+		"@typescript-eslint/eslint-plugin": "^7.15.0",
+		"@typescript-eslint/parser": "^7.15.0",
+		"better-sqlite3": "^11.1.2",
 		"drizzle-orm": "^0.31.2",
-		"eslint": "^9.5.0",
-		"hono": "^4.4.8",
+		"eslint": "^9.6.0",
+		"hono": "^4.4.11",
 		"prettier": "^3.3.2",
-		"typescript": "^5.5.2",
+		"typescript": "^5.5.3",
 		"valibot": "^0.35.0",
-		"wrangler": "^3.62.0"
+		"wrangler": "^3.63.0"
 	}
 }
