@@ -6,17 +6,17 @@
 		"format": "prettier --write ."
 	},
 	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20240806.0",
+		"@cloudflare/workers-types": "^4.20240903.0",
 		"@hono/valibot-validator": "^0.3.0",
-		"@typescript-eslint/eslint-plugin": "^8.1.0",
-		"@typescript-eslint/parser": "^8.1.0",
-		"better-sqlite3": "^11.1.2",
+		"@typescript-eslint/eslint-plugin": "^8.4.0",
+		"@typescript-eslint/parser": "^8.4.0",
+		"better-sqlite3": "^11.2.1",
 		"drizzle-orm": "^0.33.0",
-		"eslint": "^9.9.0",
-		"hono": "^4.5.5",
+		"eslint": "^9.9.1",
+		"hono": "^4.5.11",
 		"prettier": "^3.3.3",
 		"typescript": "^5.5.4",
-		"valibot": "^0.37.0",
-		"wrangler": "^3.70.0"
+		"valibot": "^0.41.0",
+		"wrangler": "^3.74.0"
 	}
 }
