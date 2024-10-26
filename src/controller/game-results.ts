@@ -6,6 +6,7 @@ import { UsernameSchema, GameNumSchema, AnswerSchema, UserIdSchema } from '../ut
 import { createDbClient } from '../dao/wordlettuce-db';
 import { getGameNum } from '../util/game-num';
 import { requireToken } from '../middleware/requireToken';
+import { cache } from 'hono/cache';
 const gameResultsController = new Hono<{ Bindings: ApiWordLettuceBindings }>();
 
 const GetGameResultsQuerySchema = v.object({
@@ -24,18 +25,25 @@ const GetGameResultsQuerySchema = v.object({
 	)
 });
 
-gameResultsController.get('/', vValidator('query', GetGameResultsQuerySchema), async (c) => {
-	const { username, limit, start } = c.req.valid('query');
-	const { getNextPageAfter } = createDbClient(c);
+gameResultsController.get(
+	'/',
+	cache({
+		cacheName: 'api-wordlettuce-game-results-v2',
+		cacheControl: 'max-age=60'
+	}),
+	vValidator('query', GetGameResultsQuerySchema),
+	async (c) => {
+		const { username, limit, start } = c.req.valid('query');
+		const { getNextPageAfter } = createDbClient(c);
 
-	const { results, next } = await getNextPageAfter({ username, limit, start });
-	return c.json({
-		results: results.slice(0, limit),
-		next,
-		limit,
-		start
+		const { results, next } = await getNextPageAfter({ username, limit, start });
+		return c.json({
+			results: results.slice(0, limit),
+			next,
+			limit,
+			start
+		});
 	});
-});
 
 const CreateGameResultJsonSchema = v.object({
 	gameNum: GameNumSchema,
