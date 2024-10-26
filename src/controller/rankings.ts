@@ -19,10 +19,10 @@ const GetRankingsQuerySchema = v.object({
 
 rankingsControllerV2.get(
 	'/',
-	// cache({
-	// 	cacheName: 'api-wordlettuce-rankings-v2',
-	// 	cacheControl: 'max-age=60'
-	// }),
+	cache({
+		cacheName: 'api-wordlettuce-rankings-v2',
+		cacheControl: 'max-age=60'
+	}),
 	vValidator('query', GetRankingsQuerySchema),
 	async (c) => {
 		const { getRankings } = createDbClient(c);
