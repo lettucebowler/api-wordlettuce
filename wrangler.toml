@@ -6,6 +6,9 @@ binding = "WORDLETTUCE_DB"
 database_name = "wordlettuce-beta"
 database_id = "6f4b4e21-8961-4fe3-b2da-842499b37879"
 
+[vars]
+TURSO_DATABASE_URL = "libsql://lettuce-wordle-lettucebowler.turso.io"
+
 
 [env.prod]
 routes = [

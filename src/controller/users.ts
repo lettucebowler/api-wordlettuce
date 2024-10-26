@@ -3,8 +3,7 @@ import * as v from 'valibot';
 import { ApiWordLettuceBindings } from '../util/env';
 import { UserIdSchema, UsernameSchema } from '../util/schemas';
 import { vValidator } from '@hono/valibot-validator';
-import { drizzle } from 'drizzle-orm/d1';
-import { users } from '../schema/drizzle';
+import { createDbClient } from '../dao/wordlettuce-db';
 
 const userController = new Hono<{ Bindings: ApiWordLettuceBindings }>();
 
@@ -22,12 +21,8 @@ userController.put(
 	async (c) => {
 		const { username } = c.req.valid('json');
 		const { userId } = c.req.valid('param');
-		const db = drizzle(c.env.WORDLETTUCE_DB);
-		const inserts = await db
-			.insert(users)
-			.values({ username: username, id: userId })
-			.onConflictDoUpdate({ target: users.id, set: { username } })
-			.returning();
+		const { upsertUser } = createDbClient(c);
+		const inserts = await upsertUser({ username, userId });
 		if (!inserts.length) {
 			return c.json(
 				{
