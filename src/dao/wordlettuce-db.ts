@@ -1,17 +1,19 @@
-import { drizzle } from 'drizzle-orm/libsql';
+import { drizzle } from 'drizzle-orm/d1';
 import { gameResults, users } from '../schema/drizzle';
-import { and, count, desc, eq, gt, lt, lte, sql } from 'drizzle-orm';
+import { and, count, desc, eq, gt, lte, sql } from 'drizzle-orm';
 import { getGameNum } from '../util/game-num';
 import { Context } from 'hono';
 import { ApiWordLettuceBindings } from '../util/env';
 
 export function createDbClient(c: Context<{ Bindings: ApiWordLettuceBindings }>) {
-	const db = drizzle({
-		connection: {
-			url: c.env.TURSO_DATABASE_URL,
-			authToken: c.env.TURSO_AUTH_TOKEN
-		}
-	});
+	// const db = drizzle({
+	// 	connection: {
+	// 		url: c.env.TURSO_DATABASE_URL,
+	// 		authToken: c.env.TURSO_AUTH_TOKEN
+	// 	}
+	// });
+
+	const db = drizzle(c.env.WORDLETTUCE_DB);
 
 	async function saveGame({
 		userId,
