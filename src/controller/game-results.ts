@@ -5,6 +5,7 @@ import { vValidator } from '@hono/valibot-validator';
 import { UsernameSchema, GameNumSchema, AnswerSchema, UserIdSchema } from '../util/schemas';
 import { createDbClient } from '../dao/wordlettuce-db';
 import { getGameNum } from '../util/game-num';
+import { requireToken } from '../middleware/requireToken';
 const gameResultsController = new Hono<{ Bindings: ApiWordLettuceBindings }>();
 
 const GetGameResultsQuerySchema = v.object({
@@ -42,18 +43,23 @@ const CreateGameResultJsonSchema = v.object({
 	answers: AnswerSchema
 });
 
-gameResultsController.post('/', vValidator('json', CreateGameResultJsonSchema), async (c) => {
-	const { gameNum, userId, answers } = c.req.valid('json');
-	const { saveGame } = createDbClient(c);
-	const inserts = await saveGame({ gameNum, userId, answers });
-	if (!inserts.length) {
-		return c.json(
-			{
-				success: false
-			},
-			500
-		);
+gameResultsController.post(
+	'/',
+	requireToken,
+	vValidator('json', CreateGameResultJsonSchema),
+	async (c) => {
+		const { gameNum, userId, answers } = c.req.valid('json');
+		const { saveGame } = createDbClient(c);
+		const inserts = await saveGame({ gameNum, userId, answers });
+		if (!inserts.length) {
+			return c.json(
+				{
+					success: false
+				},
+				500
+			);
+		}
+		return c.json(inserts.at(0));
 	}
-	return c.json(inserts.at(0));
-});
+);
 export default gameResultsController;
