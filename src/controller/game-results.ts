@@ -27,10 +27,6 @@ const GetGameResultsQuerySchema = v.object({
 
 gameResultsController.get(
 	'/',
-	cache({
-		cacheName: 'api-wordlettuce-game-results-v2',
-		cacheControl: 'max-age=60'
-	}),
 	vValidator('query', GetGameResultsQuerySchema),
 	async (c) => {
 		const { username, limit, start } = c.req.valid('query');
