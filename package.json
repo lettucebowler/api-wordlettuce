@@ -1,6 +1,6 @@
 {
 	"scripts": {
-		"dev": "wrangler dev src/index.ts",
+		"dev": "wrangler dev --remote src/index.ts",
 		"ship": "wrangler deploy src/index.ts",
 		"lint": "prettier --check . && eslint --ignore-path .gitignore .",
 		"format": "prettier --write ."
