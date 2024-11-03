@@ -2,15 +2,13 @@ import { Hono } from 'hono';
 import * as v from 'valibot';
 import { ApiWordLettuceBindings } from '../util/env';
 import { vValidator } from '@hono/valibot-validator';
-import { UsernameSchema, GameNumSchema, AnswerSchema, UserIdSchema } from '../util/schemas';
-import { createDbClient } from '../dao/wordlettuce-db';
+import { Username, GameNumSchema, AnswerSchema, UserIdSchema } from '../util/schemas';
+import { createGameResultsDao } from '../dao/game-results';
 import { getGameNum } from '../util/game-num';
-import { requireToken } from '../middleware/requireToken';
-import { cache } from 'hono/cache';
 const gameResultsController = new Hono<{ Bindings: ApiWordLettuceBindings }>();
 
 const GetGameResultsQuerySchema = v.object({
-	username: UsernameSchema,
+	username: Username,
 	limit: v.pipe(
 		v.optional(v.string(), '30'),
 		v.transform((input) => Number(input)),
@@ -25,21 +23,18 @@ const GetGameResultsQuerySchema = v.object({
 	)
 });
 
-gameResultsController.get(
-	'/',
-	vValidator('query', GetGameResultsQuerySchema),
-	async (c) => {
-		const { username, limit, start } = c.req.valid('query');
-		const { getNextPageAfter } = createDbClient(c);
+gameResultsController.get('/', vValidator('query', GetGameResultsQuerySchema), async (c) => {
+	const { username, limit, start } = c.req.valid('query');
+	const { getNextPageAfter } = createGameResultsDao(c);
 
-		const { results, next } = await getNextPageAfter({ username, limit, start });
-		return c.json({
-			results: results.slice(0, limit),
-			next,
-			limit,
-			start
-		});
+	const { results, next } = await getNextPageAfter({ username, limit, start });
+	return c.json({
+		results: results.slice(0, limit),
+		next,
+		limit,
+		start
 	});
+});
 
 const CreateGameResultJsonSchema = v.object({
 	gameNum: GameNumSchema,
@@ -47,23 +42,18 @@ const CreateGameResultJsonSchema = v.object({
 	answers: AnswerSchema
 });
 
-gameResultsController.post(
-	'/',
-	requireToken,
-	vValidator('json', CreateGameResultJsonSchema),
-	async (c) => {
-		const { gameNum, userId, answers } = c.req.valid('json');
-		const { saveGame } = createDbClient(c);
-		const inserts = await saveGame({ gameNum, userId, answers });
-		if (!inserts.length) {
-			return c.json(
-				{
-					success: false
-				},
-				500
-			);
-		}
-		return c.json(inserts.at(0));
+gameResultsController.post('/', vValidator('json', CreateGameResultJsonSchema), async (c) => {
+	const { gameNum, userId, answers } = c.req.valid('json');
+	const { saveGame } = createGameResultsDao(c);
+	const inserts = await saveGame({ gameNum, userId, answers });
+	if (!inserts.length) {
+		return c.json(
+			{
+				success: false
+			},
+			500
+		);
 	}
-);
+	return c.json(inserts.at(0));
+});
 export default gameResultsController;

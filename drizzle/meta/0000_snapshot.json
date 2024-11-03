@@ -1,96 +1,103 @@
 {
-  "version": "6",
-  "dialect": "sqlite",
-  "id": "2588762f-7edf-4dee-be41-ebfc5aefb1ee",
-  "prevId": "00000000-0000-0000-0000-000000000000",
-  "tables": {
-    "game_results": {
-      "name": "game_results",
-      "columns": {
-        "gamenum": {
-          "name": "gamenum",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "answers": {
-          "name": "answers",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "user_id": {
-          "name": "user_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "attempts": {
-          "name": "attempts",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "game_num_idx": {
-          "name": "game_num_idx",
-          "columns": [
-            "gamenum"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {
-        "game_results_user_id_gamenum_pk": {
-          "columns": [
-            "user_id",
-            "gamenum"
-          ],
-          "name": "game_results_user_id_gamenum_pk"
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "users": {
-      "name": "users",
-      "columns": {
-        "github_id": {
-          "name": "github_id",
-          "type": "integer",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "username": {
-          "name": "username",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    }
-  },
-  "views": {},
-  "enums": {},
-  "_meta": {
-    "schemas": {},
-    "tables": {},
-    "columns": {}
-  },
-  "internal": {
-    "indexes": {}
-  }
+	"id": "00000000-0000-0000-0000-000000000000",
+	"prevId": "",
+	"version": "6",
+	"dialect": "sqlite",
+	"tables": {
+		"users": {
+			"name": "users",
+			"columns": {
+				"github_id": {
+					"autoincrement": false,
+					"name": "github_id",
+					"type": "integer",
+					"primaryKey": true,
+					"notNull": false
+				},
+				"username": {
+					"autoincrement": false,
+					"name": "username",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false
+				}
+			},
+			"compositePrimaryKeys": {},
+			"indexes": {
+				"username_unique": {
+					"name": "username_unique",
+					"columns": ["username"],
+					"isUnique": true
+				}
+			},
+			"foreignKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"game_results": {
+			"name": "game_results",
+			"columns": {
+				"gamenum": {
+					"autoincrement": false,
+					"name": "gamenum",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"answers": {
+					"autoincrement": false,
+					"name": "answers",
+					"type": "text(30)",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"user_id": {
+					"autoincrement": false,
+					"name": "user_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				},
+				"attempts": {
+					"autoincrement": false,
+					"name": "attempts",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": true
+				}
+			},
+			"compositePrimaryKeys": {
+				"game_results_gamenum_user_id_pk": {
+					"columns": ["gamenum", "user_id"],
+					"name": "game_results_gamenum_user_id_pk"
+				}
+			},
+			"indexes": {
+				"game_results_gamenum_desc": {
+					"name": "game_results_gamenum_desc",
+					"columns": ["gamenum"],
+					"isUnique": false
+				}
+			},
+			"foreignKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
+		"_cf_KV": {
+			"name": "_cf_KV",
+			"columns": {},
+			"compositePrimaryKeys": {},
+			"indexes": {},
+			"foreignKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		}
+	},
+	"views": {},
+	"enums": {},
+	"_meta": {
+		"schemas": {},
+		"tables": {},
+		"columns": {}
+	}
 }

@@ -1,34 +1,32 @@
 import { Hono } from 'hono';
 import * as v from 'valibot';
 import { ApiWordLettuceBindings } from '../util/env';
-import { UserIdSchema, UsernameSchema } from '../util/schemas';
+import { UserIdSchema, Username } from '../util/schemas';
 import { vValidator } from '@hono/valibot-validator';
-import { createDbClient } from '../dao/wordlettuce-db';
-import { requireToken } from '../middleware/requireToken';
+import { createGameResultsDao } from '../dao/game-results';
+import { createUserDao } from '../dao/user';
 
-const userController = new Hono<{ Bindings: ApiWordLettuceBindings }>();
+const usersController = new Hono<{ Bindings: ApiWordLettuceBindings }>();
 
 const UpsertUserJsonSchema = v.object({
-	username: UsernameSchema
+	username: Username
 });
 const UpserUserParamSchema = v.object({
 	userId: v.pipe(v.string(), v.transform(Number), UserIdSchema)
 });
 
-userController.put(
+usersController.put(
 	'/:userId',
-	requireToken,
 	vValidator('json', UpsertUserJsonSchema),
 	vValidator('param', UpserUserParamSchema),
 	async (c) => {
 		const { username } = c.req.valid('json');
 		const { userId } = c.req.valid('param');
-		const { upsertUser } = createDbClient(c);
+		const { upsertUser } = createGameResultsDao(c);
 		const inserts = await upsertUser({ username, userId });
 		if (!inserts.length) {
 			return c.json(
 				{
-					success: false,
 					message: 'Create failed.'
 				},
 				500
@@ -38,4 +36,59 @@ userController.put(
 	}
 );
 
-export default userController;
+const CreateUserRequestJson = v.object({
+	username: Username,
+	githubId: v.pipe(v.number(), v.integer()),
+	email: v.pipe(v.string(), v.email())
+});
+
+usersController.post('/', vValidator('json', CreateUserRequestJson), async (c) => {
+	const { username, githubId, email } = c.req.valid('json');
+	const { upsertUser } = createUserDao(c);
+	try {
+		const user = await upsertUser({ username, githubId, email });
+		return c.json(user, 201);
+	} catch (e) {
+		return c.json(
+			{
+				message: 'Create failed.'
+			},
+			500
+		);
+	}
+});
+
+const GetUserByGithubIdParams = v.object({
+	githubId: v.pipe(v.number(), v.integer())
+});
+
+usersController.get(
+	'/github/:githubId',
+	vValidator('param', GetUserByGithubIdParams),
+	async (c) => {
+		const { githubId } = c.req.valid('param');
+		const { getUserFromGitHubId } = createUserDao(c);
+		try {
+			const user = await getUserFromGitHubId({ githubId });
+			if (!user) {
+				return c.json(
+					{
+						message: 'user not found'
+					},
+					404
+				);
+			}
+			return c.json(user);
+		} catch (e) {
+			return c.json(
+				{
+					success: false,
+					message: 'Cannot get user'
+				},
+				500
+			);
+		}
+	}
+);
+
+export default usersController;
