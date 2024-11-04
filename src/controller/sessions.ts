@@ -71,3 +71,5 @@ sessionsController.delete('/', vValidator('json', InvalidateUserSessionJson), as
 		);
 	}
 });
+
+export { sessionsController };

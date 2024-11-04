@@ -39,6 +39,25 @@ export const gameResults = sqliteTable(
 	}
 );
 
+export const gameResultTable = sqliteTable(
+	'gameresult',
+	{
+		gameNum: integer('gamenum').notNull(),
+		answers: text({ length: 30 }).notNull(),
+		userId: integer('userid').notNull(),
+		attempts: integer().notNull()
+	},
+	(table) => {
+		return {
+			gamenumDesc: index('gameresults_gamenum_desc').on(table.gameNum),
+			pk: primaryKey({
+				columns: [table.gameNum, table.userId],
+				name: 'game_results_gamenum_user_id_pk'
+			})
+		};
+	}
+);
+
 export const cfKv = sqliteTable('_cf_KV', {});
 
 export const userTable = sqliteTable(

@@ -5,6 +5,7 @@ compatibility_date = "2024-06-01"
 binding = "WORDLETTUCE_DB"
 database_name = "wordlettuce"
 database_id = "818c950f-7cbd-43b9-8f05-e6a230d06fe0"
+migrations_dir = "drizzle" # this is the line to change
 
 [vars]
 TURSO_DATABASE_URL = "libsql://lettuce-wordle-lettucebowler.turso.io"
