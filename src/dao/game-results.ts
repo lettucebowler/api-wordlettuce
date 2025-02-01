@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/d1';
-import { gameResults, users, sessionTable, userTable } from '../schema/drizzle';
+import { gameResults, users } from '../schema/drizzle';
 import { and, count, desc, eq, gt, lte, sql } from 'drizzle-orm';
 import { getGameNum } from '../util/game-num';
 import { Context } from 'hono';
